@@ -1,7 +1,8 @@
 ;------------------------------
 ; Copper bars that show and fade in time to a soundtracker mod.
 ; Logo colour cycles over the copper bars
-; Robert Price - 17/12/2022
+; Two sprites orbit each other
+; Robert Price - 02/01/2023
 ;
 ;---------- Includes ----------
             INCDIR      "include"
@@ -65,14 +66,20 @@ init:
 			move.w	d0,copBp1P+2						; set the high word
 
 ; setup sprite0 in the copper list
-			move.l	#spriteData,d0
+			move.l	#sprite0Data,d0
 			move.w	d0,sprite0+6						; set hte low word
 			swap	d0
 			move.w	d0,sprite0+2						; set the high word
 
-; setup dummy sprites for sprite1 to sprite7
-			lea 	sprite1,a0
-			moveq.l	#6,d1								; 7 sprites to setup
+; setup sprite1 in the copper list
+			move.l	#sprite1Data,d0
+			move.w	d0,sprite1+6						; set hte low word
+			swap	d0
+			move.w	d0,sprite1+2						; set the high word
+
+; setup dummy sprites for sprite2 to sprite7
+			lea 	sprite2,a0
+			moveq.l	#5,d1								; 6 sprites to setup
 .spriteSetupLoop:
 			move.l	#dummySpriteData,d0						
 			move.w	d0,6(a0)							; set the low word
@@ -84,6 +91,9 @@ init:
 ; setup the sprite coordinates
 			lea			spriteCircleCoords,a0
 			move.l		a0,NextSprite0Coord
+
+			add.l		#720,a0							; offset sprite1 by half the coord table. This should place it opposite sprite0
+			move.l		a0,NextSprite1Coord
 
 
 ; install our copper list
@@ -162,13 +172,22 @@ mainloop:
 
 ; move the sprite using the included coordinate table data
 			move.l		NextSprite0Coord,a0			; get the coords of the next position
-			move.l		(a0)+,spriteData			; save it to the sprite data and incrememt the table offset
+			move.l		(a0)+,sprite0Data			; save it to the sprite data and incrememt the table offset
 			lea			spriteCircleCoordsEnd,a1	; load the address of the end of the coord table
 			cmp.l		a0,a1						; compare it to the next position
 			bgt			.skipSprite0CoordReset		; if the position has overshot the end of teh table reset it
 			lea			spriteCircleCoords,a0
 .skipSprite0CoordReset:
 			move.l		a0,NextSprite0Coord			; save the next position.
+
+			move.l		NextSprite1Coord,a0			; get the coords of the next position
+			move.l		(a0)+,sprite1Data			; save it to the sprite data and incrememt the table offset
+			lea			spriteCircleCoordsEnd,a1	; load the address of the end of the coord table
+			cmp.l		a0,a1						; compare it to the next position
+			bgt			.skipSprite1CoordReset		; if the position has overshot the end of teh table reset it
+			lea			spriteCircleCoords,a0
+.skipSprite1CoordReset:
+			move.l		a0,NextSprite1Coord			; save the next position.
 
 
 ; check if the left mouse button has been pressed
@@ -337,6 +356,8 @@ LogoB:		dc.b 0					; save the blue value of the logo
 
 NextSprite0Coord:
 			dc.l	0				; the address of the next coordinate in the table to use for Sprite0
+NextSprite1Coord:
+			dc.l	0				; the address of the next coordinate in the table to use for Sprite1
 
 			EVEN
 
@@ -602,7 +623,16 @@ copperBar4:
 ;
 ; Sprite data for spaceship sprite.  It appears on the screen at V=65 and H=128.
 ;
-spriteData:
+sprite0Data:
+    dc.w    $6D60,$7200             ;VSTART, HSTART, VSTOP
+    dc.w    $0990,$07E0             ;First pair of descriptor words
+    dc.w    $13C8,$0FF0
+    dc.w    $23C4,$1FF8
+    dc.w    $13C8,$0FF0
+    dc.w    $0990,$07E0
+    dc.w    $0000,$0000             ;End of sprite data
+
+sprite1Data:
     dc.w    $6D60,$7200             ;VSTART, HSTART, VSTOP
     dc.w    $0990,$07E0             ;First pair of descriptor words
     dc.w    $13C8,$0FF0

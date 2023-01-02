@@ -74,7 +74,7 @@ init:
 			lea 	sprite1,a0
 			moveq.l	#6,d1								; 7 sprites to setup
 .spriteSetupLoop:
-			move.l	#spriteData,d0						
+			move.l	#dummySpriteData,d0						
 			move.w	d0,6(a0)							; set the low word
 			swap	d0
 			move.w	d0,2(a0)							; set the highword
@@ -83,7 +83,7 @@ init:
 
 ; setup the sprite coordinates
 			lea			spriteCircleCoords,a0
-			move.l		a0,NextSpriteCoord
+			move.l		a0,NextSprite0Coord
 
 
 ; install our copper list
@@ -161,14 +161,14 @@ mainloop:
 
 
 ; move the sprite using the included coordinate table data
-			move.l		NextSpriteCoord,a0			; get the coords of the next position
+			move.l		NextSprite0Coord,a0			; get the coords of the next position
 			move.l		(a0)+,spriteData			; save it to the sprite data and incrememt the table offset
 			lea			spriteCircleCoordsEnd,a1	; load the address of the end of the coord table
 			cmp.l		a0,a1						; compare it to the next position
-			bgt			.skipCoordReset				; if the position has overshot the end of teh table reset it
+			bgt			.skipSprite0CoordReset		; if the position has overshot the end of teh table reset it
 			lea			spriteCircleCoords,a0
-.skipCoordReset:
-			move.l		a0,NextSpriteCoord			; save the next position.
+.skipSprite0CoordReset:
+			move.l		a0,NextSprite0Coord			; save the next position.
 
 
 ; check if the left mouse button has been pressed
@@ -328,15 +328,15 @@ DMACONSave:   dc.w        1
 CopperSave:   dc.l        1
 INTENARSave:  dc.w        1
 
+LogoColour:	dc.w 0					; save the RGB value of the logo
 LogoR: 		dc.b $f					; save the red value of the logo
 LogoG:		dc.b 0					; save the green value of the logo
 LogoB:		dc.b 0					; save the blue value of the logo
-LogoColour:	dc.w 0					; save the RGB value of the logo
 
-SpriteHPos:	dc.b	$38				; the horizontal position of the sprite.
 			EVEN
-NextSpriteCoord:
-			dc.l	0
+
+NextSprite0Coord:
+			dc.l	0				; the address of the next coordinate in the table to use for Sprite0
 
 			EVEN
 
